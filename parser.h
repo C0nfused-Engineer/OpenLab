@@ -1,0 +1,40 @@
+// parser.h
+#ifndef PARSER_H
+#define PARSER_H
+
+#include <vector>
+#include <string>
+#include <memory>
+#include <stdexcept>
+#include "token.h"
+#include "expr.h"
+
+class Parser {
+	public:
+		explicit Parser(std::vector<Token> tokens) : tokens(std::move(tokens)) {};
+		std::unique_ptr<Expr> parse();
+		
+		bool shouldPrint() const;
+	
+	private:
+		std::vector<Token> tokens;
+		size_t current = 0;
+		bool print = true;
+		
+		const Token& peek() const;
+		const Token& peekNext() const;
+		const Token& previous() const;
+		const Token& advance();
+		bool check(TokenType t) const;
+		bool match(TokenType t);
+		const Token& expect(TokenType t, const std::string& msg);
+		
+		std::unique_ptr<Expr> statement();
+		std::unique_ptr<Expr> expression();
+		std::unique_ptr<Expr> term();
+		std::unique_ptr<Expr> unary();
+		std::unique_ptr<Expr> power();
+		std::unique_ptr<Expr> primary();
+};
+
+#endif
