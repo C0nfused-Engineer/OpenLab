@@ -23,14 +23,9 @@ std::string formatValue(const Value& v) {
 }
 
 double toDouble(const Value& v) {
-	if(auto b = std::get_if<bool>(&v)) return *b ? 1.0 : 0.0;
 	if(auto i = std::get_if<int64_t>(&v)) return static_cast<double>(*i);
-	return std::get<double>(v);
-}
-
-static int64_t toInt(const Value& v) {
-	if(auto b = std::get_if<bool>(&v)) return *b ? 1 : 0;
-	return std::get<int64_t>(v);
+	if(auto d = std::get_if<double>(&v)) return *d;
+	throw std::runtime_error("expected a number, got " + typeName(v));
 }
 
 static int64_t intPow(int64_t base, int64_t exp) {
@@ -40,6 +35,9 @@ static int64_t intPow(int64_t base, int64_t exp) {
 }
 
 Value binaryOp(TokenType op, const Value& l, const Value& r) {
+	if(std::holds_alternative<bool>(l) || std::holds_alternative<bool>(r)) {
+		throw std::runtime_error("cannot do arithmetic on bool");
+	}
 	bool useFloat = std::holds_alternative<double>(l) || std::holds_alternative<double>(r);
 	
 	if(useFloat) {
@@ -53,14 +51,12 @@ Value binaryOp(TokenType op, const Value& l, const Value& r) {
 			default: break;
 		}
 	} else {
-		int64_t a = toInt(l), b = toInt(r);
+		int64_t a = std::get<int64_t>(l), b = std::get<int64_t>(r);
 		switch(op) {
 			case TokenType::PLUS: return a + b;
 			case TokenType::MINUS: return a - b;
 			case TokenType::ASTR: return a * b;
-			case TokenType::SLASH: 
-				if(b == 0) throw std::runtime_error("integer division by zero");
-				return a / b;
+			case TokenType::SLASH: return static_cast<double>(a) / b;
 			case TokenType::CARET: 
 				if(b < 0) return std::pow(static_cast<double>(a), static_cast<double>(b));
 				return intPow(a, b);
@@ -73,8 +69,9 @@ Value binaryOp(TokenType op, const Value& l, const Value& r) {
 Value unaryOp(TokenType op, const Value& v) {
 	switch(op) {
 		case TokenType::MINUS:
+			if(auto i = std::get_if<int64_t>(&v)) return -*i;
 			if(auto d = std::get_if<double>(&v)) return -*d;
-			return -toInt(v);
+			throw std::runtime_error)("cannot negate a bool");
 		default:
 			throw std::runtime_error("unary operator not supported for " + typeName(v));
 	}
