@@ -9,6 +9,14 @@ std::string BinaryExpr::toString() const {
 }
 
 Value BinaryExpr::eval(Environment& env) const {
+	if(op == TokenType::AND) {
+		if(!toCondition(left->eval(env))) return false;
+		return toCondition(right->eval(env));
+	}
+	if(op == TokenType::OR) {
+		if(toCondition(left->eval(env))) return true;
+		return toCondition(right->eval(env));
+	}
 	return binaryOp(op, left->eval(env), right->eval(env));
 }
 

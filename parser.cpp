@@ -63,6 +63,48 @@ std::unique_ptr<Expr> Parser::statement() {
 }
 
 std::unique_ptr<Expr> Parser::expression() {
+	return logicOr();
+}
+
+std::unique_ptr<Expr> Parser::logicOr() {
+	auto left = logicAnd();
+	while(match(TokenType::OR)) {
+		auto right = logicAnd();
+		left = std::make_unique<BinaryExpr>(TokenType::OR, std::move(left), std::move(right));
+	}
+	return left;
+}
+
+std::unique_ptr<Expr> Parser::logicAnd() {
+	auto left = equality();
+	while(match(TokenType::AND)) {
+		auto right = equality();
+		left = std::make_unique<BinaryExpr>(TokenType::AND, std::move(left), std::move(right));
+	}
+	return left;
+}
+
+std::unique_ptr<Expr> Parser::equality() {
+	auto left = comparison();
+	while(match(TokenType::EQUAL_EQUAL) || match(TokenType::NOT_EQUAL)) {
+		TokenType op = previous().type;
+		auto right = comparison();
+		left = std::make_unique<BinaryExpr>(op, std::move(left), std::move(right));
+	}
+	return left;
+}
+
+std::unique_ptr<Expr> Parser::comparison() {
+	auto left = additive();
+	while(match(TokenType::LESSER) || match(TokenType::LESSER_EQUAL) || match(TokenType::GREATER) || match(TokenType::GREATER_EQUAL)) {
+		TokenType op = previous().type;
+		auto right = additive();
+		left = std::make_unique<BinaryExpr>(op, std::move(left), std::move(right));
+	}
+	return left;
+}
+
+std::unique_ptr<Expr> Parser::additive() {
 	auto left = term();
 	
 	while(match(TokenType::PLUS) || match(TokenType::MINUS)) {
@@ -87,11 +129,11 @@ std::unique_ptr<Expr> Parser::term() {
 }
 
 std::unique_ptr<Expr> Parser::unary() {
-	if(match(TokenType::MINUS)) {
+	if(match(TokenType::MINUS) || match(TokenType::NOT)) {
+		TokenType op = previous().type;
 		auto operand = unary();
-		return std::make_unique<UnaryExpr>(TokenType::MINUS, std::move(operand));
+		return std::make_unique<UnaryExpr>(op, std::move(operand));
 	}
-	
 	return power();
 }
 

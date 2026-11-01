@@ -33,6 +33,60 @@ std::vector<Token> Lexer::tokenize() {
 						addSingle(TokenType::ASSIGN); 
 					}
 				break;
+				case '!': // Case for 2 char tokens
+					if(peekNext() == '=') {
+						int startCol = col;
+						advance(); advance();
+						addToken(TokenType::NOT_EQUAL, "!=", line, startCol);
+					} else { 
+						addSingle(TokenType::NOT); 
+					}
+				break;
+				case '<': // Case for 2 char tokens
+					if(peekNext() == '=') {
+						int startCol = col;
+						advance(); advance();
+						addToken(TokenType::LESSER_EQUAL, "<=", line, startCol);
+					} else { 
+						addSingle(TokenType::LESSER); 
+					}
+				break;
+				case '>': // Case for 2 char tokens
+					if(peekNext() == '=') {
+						int startCol = col;
+						advance(); advance();
+						addToken(TokenType::GREATER_EQUAL, ">=", line, startCol);
+					} else { 
+						addSingle(TokenType::GREATER); 
+					}
+				break;
+				case '&': // Case for 2 char tokens
+					if(peekNext() == '&') {
+						int startCol = col;
+						advance(); advance();
+						addToken(TokenType::AND, "&&", line, startCol);
+					} else { 
+						throw std::runtime_error("& is invalid token"); 
+					}
+				break;
+				case '|': // Case for 2 char tokens
+					if(peekNext() == '|') {
+						int startCol = col;
+						advance(); advance();
+						addToken(TokenType::OR, "||", line, startCol);
+					} else { 
+						throw std::runtime_error("| is invalid token"); 
+					}
+				break;
+				case '/': // Case for 2 char tokens
+					if(peekNext() == '/') {
+						int startCol = col;
+						advance(); advance();
+						addToken(TokenType::COMMENT, "//", line, startCol);
+					} else { 
+						addSingle(TokenType::SLASH); 
+					}
+				break;
 				case '(': addSingle(TokenType::LPAREN); break; // Cases for 1 char tokens
 				case ')': addSingle(TokenType::RPAREN); break;
 				case '[': addSingle(TokenType::LBRACK); break;
@@ -42,7 +96,6 @@ std::vector<Token> Lexer::tokenize() {
 				case '+': addSingle(TokenType::PLUS); break;
 				case '-': addSingle(TokenType::MINUS); break;
 				case '*': addSingle(TokenType::ASTR); break;
-				case '/': addSingle(TokenType::SLASH); break;
 				case ';': addSingle(TokenType::SEMI); break;
 				case '^': addSingle(TokenType::CARET); break;
 				case ',': addSingle(TokenType::COMMA); break;

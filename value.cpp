@@ -28,13 +28,32 @@ double toDouble(const Value& v) {
 	throw std::runtime_error("expected a number, got " + typeName(v));
 }
 
-static int64_t intPow(int64_t base, int64_t exp) {
+bool toCondition(const Value& v) {
+	if(auto b = std::get_if<bool>(&v)) return *b;
+	throw std::runtime_error("expected a bool, got " + typeName(v));
+}
+
+bool isComparison(TokenType op) {
+	switch(op) {
+		case TokenType::EQUAL_EQUAL: return true;
+		case TokenType::GREATER: return true;
+		case TokenType::GREATER_EQUAL: return true;
+		case TokenType::LESSER: return true;
+		case TokenType::LESSER_EQUAL: return true;
+		case TokenType::NOT_EQUAL: return true;
+		default: return false;
+	}
+}
+
+int64_t intPow(int64_t base, int64_t exp) {
 	int64_t result = 1;
 	while(exp-- > 0) result *= base;
 	return result;
 }
 
 Value binaryOp(TokenType op, const Value& l, const Value& r) {
+	if(isComparison(op)) return compareOp(op, l, r);
+	
 	if(std::holds_alternative<bool>(l) || std::holds_alternative<bool>(r)) {
 		throw std::runtime_error("cannot do arithmetic on bool");
 	}
@@ -71,8 +90,51 @@ Value unaryOp(TokenType op, const Value& v) {
 		case TokenType::MINUS:
 			if(auto i = std::get_if<int64_t>(&v)) return -*i;
 			if(auto d = std::get_if<double>(&v)) return -*d;
-			throw std::runtime_error)("cannot negate a bool");
+			throw std::runtime_error("cannot negate a bool");
+		case TokenType::NOT:
+			return !toCondition(v);
 		default:
 			throw std::runtime_error("unary operator not supported for " + typeName(v));
 	}
+}
+
+Value compareOp(TokenType op, const Value& l, const Value& r) {
+	bool lBool = std::holds_alternative<bool>(l);
+	bool rBool = std::holds_alternative<bool>(r);
+	
+	if(lBool && rBool) {
+		bool a = std::get<bool>(l), b = std::get<bool>(r);
+		if(op == TokenType::EQUAL_EQUAL) return a == b;
+		if(op == TokenType::NOT_EQUAL) return a != b;
+		throw std::runtime_error("cannot order bools");
+	}
+	
+	if(lBool || rBool) {
+		throw std::runtime_error("cannot compare " + typeName(l) + " and " + typeName(r));
+	}
+	
+	if(std::holds_alternative<double>(l) || std::holds_alternative<double>(r)) {
+		double a = toDouble(l), b = toDouble(r);
+		switch(op) {
+			case TokenType::EQUAL_EQUAL: return a == b;
+			case TokenType::NOT_EQUAL: return a != b;
+			case TokenType::LESSER: return a < b;
+			case TokenType::LESSER_EQUAL: return a <= b;
+			case TokenType::GREATER: return a > b;
+			case TokenType::GREATER_EQUAL: return a >= b;
+			default: break;
+		}
+	} else {
+		int64_t a = std::get<int64_t>(l), b = std::get<int64_t>(r);
+		switch(op) {
+			case TokenType::EQUAL_EQUAL: return a == b;
+			case TokenType::NOT_EQUAL: return a != b;
+			case TokenType::LESSER: return a < b;
+			case TokenType::LESSER_EQUAL: return a <= b;
+			case TokenType::GREATER: return a > b;
+			case TokenType::GREATER_EQUAL: return a >= b;
+			default: break;
+		}
+	}
+	throw std::runtime_error("unknown comparison");
 }

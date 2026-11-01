@@ -27,9 +27,19 @@ enum class TokenType {
 	INT,
 	FLOAT,
 	STR,
+	AND,
+	OR,
 	EQUAL_EQUAL,
+	GREATER,
+	GREATER_EQUAL,
+	LESSER,
+	LESSER_EQUAL,
+	NOT,
+	NOT_EQUAL,
+	COMMENT,
 	TRU,
 	FAL,
+	NEWLINE,
 	END
 };
 
