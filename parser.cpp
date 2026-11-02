@@ -41,17 +41,72 @@ const Token& Parser::expect(TokenType t, const std::string& msg) {
 	throw std::runtime_error(msg + " at column " + std::to_string(peek().col));
 }
 
-std::unique_ptr<Expr> Parser::parse() {
-	auto tree = statement();
-	
-	print = !match(TokenType::SEMI);
-	
-	expect(TokenType::END, "unexpected token");
-	
-	return tree;
+std::vector<std::unique_ptr<Stmt>> Parser::parse() {
+	std::vector<std::unique_ptr<Stmt>> program;
+	while(!check(TokenType::END)) {
+		if(match(TokenType::NEWLINE) || match(TokenType::SEMI)) continue;
+		program.push_back(statement());
+	}
+	return program;
 }
 
-std::unique_ptr<Expr> Parser::statement() {
+std::unique_ptr<Stmt> Parser::statement() {
+	if(match(TokenType::IF)) return ifStatement();
+	if(match(TokenType::LBRACE)) return block();
+	
+	if(check(TokenType::ELSE)) {
+		throw std::runtime_error("'else' must be on the same line as the closing '}'");
+	}
+	return expressionStatement();
+}
+
+std::unique_ptr<Stmt> Parser::expressionStatement() {
+	auto expr = assignment();
+	
+	bool print = true;
+	if(match(TokenType::SEMI)) {
+		print = false;
+	} else if (match(TokenType::NEWLINE)) {
+		
+	} else if (!check(TokenType::END) && !check(TokenType::RBRACE)) {
+		throw std::runtime_error("expected ';' or end of line at column " + std::to_string(peek().col));
+	}
+	return std::make_unique<ExprStmt>(std::move(expr), print);
+}
+
+std::unique_ptr<BlockStmt> Parser::block() {
+	std::vector<std::unique_ptr<Stmt>> statements;
+	
+	while(!check(TokenType::RBRACE) && !check(TokenType::END)) {
+		if(match(TokenType::NEWLINE) || match(TokenType::SEMI)) continue;
+		statements.push_back(statement());
+	}
+	
+	expect(TokenType::RBRACE, "expected '}'");
+	return std::make_unique<BlockStmt>(std::move(statements));
+}
+
+std::unique_ptr<Stmt> Parser::ifStatement() {
+	expect(TokenType::LPAREN, "expected '(' after 'if'");
+	auto condition = expression();
+	expect(TokenType::RPAREN, "expected ')' after condition");
+	expect(TokenType::LBRACE, "expected '{' on the same line as 'if'");
+	auto thenBranch = block();
+	
+	std::unique_ptr<Stmt> elseBranch = nullptr;
+	if(match(TokenType::ELSE)) {
+		if(match(TokenType::IF)) {
+			elseBranch = ifStatement();
+		} else {
+			expect(TokenType::LBRACE, "expected '{' on the same line as 'else'");
+			elseBranch = block();
+		}
+	}
+	
+	return std::make_unique<IfStmt>(std::move(condition), std::move(thenBranch), std::move(elseBranch));
+}
+
+std::unique_ptr<Expr> Parser::assignment() {
 	if(check(TokenType::IDENT) && peekNext().type == TokenType::ASSIGN) {
 		std::string name = advance().text;
 		advance();

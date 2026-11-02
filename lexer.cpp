@@ -16,10 +16,16 @@ std::vector<Token> Lexer::tokenize() {
 	while(!atEnd()) {
 		char c = peek();
 		
-		if(isSpace(c)) { 
+		if(c == '\n') {
+			addSingle(TokenType::NEWLINE);
+		} else if(isSpace(c)) { 
 			advance();
 		} else if(isDigit(c) || (c == '.' && isDigit(peekNext()))) { // NUM literal
 			lexNumber();
+		} else if(c == '.' && peekNext() == '.' && peekNextNext() == '.') {
+			while(!atEnd() && peek() != '\n') advance();
+			advance();
+			continue;
 		} else if(isAlpha(c) || c == '_') { // IDENT or KEYWORD
 			lexIdentifier();
 		} else {
@@ -80,9 +86,7 @@ std::vector<Token> Lexer::tokenize() {
 				break;
 				case '/': // Case for 2 char tokens
 					if(peekNext() == '/') {
-						int startCol = col;
-						advance(); advance();
-						addToken(TokenType::COMMENT, "//", line, startCol);
+						while(!atEnd() && peek() != '\n') advance();
 					} else { 
 						addSingle(TokenType::SLASH); 
 					}
@@ -120,6 +124,14 @@ char Lexer::peek() const {
 char Lexer::peekNext() const {
 	if(pos + 1 < source.length()) {
 		return source[pos + 1];
+	} else {
+		return '\0';
+	}
+}
+
+char Lexer::peekNextNext() const {
+	if(pos + 2 < source.length()) {
+		return source[pos + 2];
 	} else {
 		return '\0';
 	}

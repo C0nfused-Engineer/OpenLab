@@ -36,7 +36,6 @@ enum class TokenType {
 	LESSER_EQUAL,
 	NOT,
 	NOT_EQUAL,
-	COMMENT,
 	TRU,
 	FAL,
 	NEWLINE,

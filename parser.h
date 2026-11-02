@@ -8,11 +8,12 @@
 #include <stdexcept>
 #include "token.h"
 #include "expr.h"
+#include "stmt.h"
 
 class Parser {
 	public:
 		explicit Parser(std::vector<Token> tokens) : tokens(std::move(tokens)) {};
-		std::unique_ptr<Expr> parse();
+		std::vector<std::unique_ptr<Stmt>> parse();
 		
 		bool shouldPrint() const;
 	
@@ -29,7 +30,11 @@ class Parser {
 		bool match(TokenType t);
 		const Token& expect(TokenType t, const std::string& msg);
 		
-		std::unique_ptr<Expr> statement();
+		std::unique_ptr<Stmt> statement();
+		std::unique_ptr<Stmt> expressionStatement();
+		std::unique_ptr<Stmt> ifStatement();
+		std::unique_ptr<BlockStmt> block();
+		std::unique_ptr<Expr> assignment();
 		std::unique_ptr<Expr> expression();
 		std::unique_ptr<Expr> logicOr();
 		std::unique_ptr<Expr> logicAnd();

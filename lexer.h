@@ -25,6 +25,7 @@ class Lexer {
 		
 		char peek() const;
 		char peekNext() const;
+		char peekNextNext() const;
 		char advance();
 		bool atEnd() const;
 		bool isSpace(char c) const;

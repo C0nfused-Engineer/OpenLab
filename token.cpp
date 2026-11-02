@@ -16,35 +16,34 @@ std::string opSymbol(TokenType op) {
 		case TokenType::AND: return "&&";
 		case TokenType::OR: return "||";
 		case TokenType::NOT: return "!";
-		case TokenType::COMMENT: return "//";
 		default: return "?";
 	}
 }
 
 std::string tokenTypeName(TokenType t) {
 	switch(t) {
-		case TokenType::IDENT: return "IDENT"; break;
-		case TokenType::NUM: return "NUM"; break;
-		case TokenType::PLUS: return "PLUS"; break;
-		case TokenType::MINUS: return "MINUS"; break;
-		case TokenType::ASTR: return "ASTR"; break;
-		case TokenType::SLASH: return "SLASH"; break;
-		case TokenType::LPAREN: return "LPAREN"; break;
-		case TokenType::RPAREN: return "RPAREN"; break;
-		case TokenType::LBRACK: return "LBRACK"; break;
-		case TokenType::RBRACK: return "RBRACK"; break;
-		case TokenType::LBRACE: return "LBRACE"; break;
-		case TokenType::RBRACE: return "RBRACE"; break;
-		case TokenType::SEMI: return "SEMI"; break;
-		case TokenType::CARET: return "CARET"; break;
-		case TokenType::ASSIGN: return "ASSIGN"; break;
-		case TokenType::IF: return "IF"; break;
-		case TokenType::ELSE: return "ELSE"; break;
-		case TokenType::WHILE: return "WHILE"; break;
-		case TokenType::INT: return "INT"; break;
-		case TokenType::FLOAT: return "FLOAT"; break;
-		case TokenType::STR: return "STR"; break;
-		case TokenType::EQUAL_EQUAL: return "EQUAL_EQUAL"; break;
+		case TokenType::IDENT: return "IDENT";
+		case TokenType::NUM: return "NUM";
+		case TokenType::PLUS: return "PLUS";
+		case TokenType::MINUS: return "MINUS";
+		case TokenType::ASTR: return "ASTR";
+		case TokenType::SLASH: return "SLASH";
+		case TokenType::LPAREN: return "LPAREN";
+		case TokenType::RPAREN: return "RPAREN";
+		case TokenType::LBRACK: return "LBRACK";
+		case TokenType::RBRACK: return "RBRACK";
+		case TokenType::LBRACE: return "LBRACE";
+		case TokenType::RBRACE: return "RBRACE";
+		case TokenType::SEMI: return "SEMI";
+		case TokenType::CARET: return "CARET";
+		case TokenType::ASSIGN: return "ASSIGN";
+		case TokenType::IF: return "IF";
+		case TokenType::ELSE: return "ELSE";
+		case TokenType::WHILE: return "WHILE";
+		case TokenType::INT: return "INT";
+		case TokenType::FLOAT: return "FLOAT";
+		case TokenType::STR: return "STR";
+		case TokenType::EQUAL_EQUAL: return "EQUAL_EQUAL";
 		case TokenType::LESSER: return "LESSER";
 		case TokenType::LESSER_EQUAL: return "LESSER_EQUAL";
 		case TokenType::GREATER: return "GREATER";
@@ -53,8 +52,8 @@ std::string tokenTypeName(TokenType t) {
 		case TokenType::NOT: return "NOT";
 		case TokenType::AND: return "AND";
 		case TokenType::OR: return "OR";
-		case TokenType::COMMENT: return "COMMENT";
-		case TokenType::END: return "END"; break;
-		default: return "ERROR"; break;
+		case TokenType::NEWLINE: return "NEWLINE";
+		case TokenType::END: return "END";
+		default: return "ERROR";
 	}
 }

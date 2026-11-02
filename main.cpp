@@ -22,16 +22,16 @@ int main(int const argc, char* argv[]) {
 			continue;
 		}
 		
-		if(input.find_first_not_of(" \t\r") == std::string::npos) continue;
-		
 		try {
 			Lexer lexer(input);
 			Parser parser(lexer.tokenize());
-			auto tree = parser.parse();
-			Value result = tree->eval(env);
-			if(parser.shouldPrint()) {
-				std::cout << "ans = " << formatValue(result) << "\n";
+			
+			auto program = parser.parse();
+			
+			for(const auto& stmt : program) {
+				stmt->execute(env);
 			}
+			
 		} catch(const std::exception& e) {
 			std::cout << "Error: " << e.what() << "\n";
 		}
