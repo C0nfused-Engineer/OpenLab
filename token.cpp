@@ -53,6 +53,8 @@ std::string tokenTypeName(TokenType t) {
 		case TokenType::AND: return "AND";
 		case TokenType::OR: return "OR";
 		case TokenType::NEWLINE: return "NEWLINE";
+		case TokenType::BREAK: return "BREAK";
+		case TokenType::CONTINUE: return "CONTINUE";
 		case TokenType::END: return "END";
 		default: return "ERROR";
 	}

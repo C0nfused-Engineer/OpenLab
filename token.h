@@ -39,6 +39,8 @@ enum class TokenType {
 	TRU,
 	FAL,
 	NEWLINE,
+	BREAK,
+	CONTINUE,
 	END
 };
 

@@ -14,12 +14,11 @@ class Parser {
 	public:
 		explicit Parser(std::vector<Token> tokens) : tokens(std::move(tokens)) {};
 		std::vector<std::unique_ptr<Stmt>> parse();
-		
-		bool shouldPrint() const;
 	
 	private:
 		std::vector<Token> tokens;
 		size_t current = 0;
+		int loopDepth = 0;
 		bool print = true;
 		
 		const Token& peek() const;
@@ -29,10 +28,12 @@ class Parser {
 		bool check(TokenType t) const;
 		bool match(TokenType t);
 		const Token& expect(TokenType t, const std::string& msg);
+		bool endStatement();
 		
 		std::unique_ptr<Stmt> statement();
 		std::unique_ptr<Stmt> expressionStatement();
 		std::unique_ptr<Stmt> ifStatement();
+		std::unique_ptr<Stmt> whileStatement();
 		std::unique_ptr<BlockStmt> block();
 		std::unique_ptr<Expr> assignment();
 		std::unique_ptr<Expr> expression();

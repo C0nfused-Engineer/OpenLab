@@ -8,6 +8,8 @@ static const std::unordered_map<std::string, TokenType> keywords = {
 	{"float", TokenType::FLOAT},
 	{"true", TokenType::TRU},
 	{"false", TokenType::FAL},
+	{"break", TokenType::BREAK},
+	{"continue", TokenType::CONTINUE},
 };
 
 Lexer::Lexer(const std::string& source) : source(source) {}

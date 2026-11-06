@@ -32,13 +32,22 @@ bool Parser::match(TokenType t) {
 	return false;
 }
 
-bool Parser::shouldPrint() const {
-	return print;
+bool Parser::endStatement() {
+	if(match(TokenType::SEMI)) {
+		return false;
+	}
+	if(match(TokenType::NEWLINE)) {
+		return true;
+	}
+	if(check(TokenType::END) || check(TokenType::RBRACE)) {
+		return true;
+	}
+	throw std::runtime_error("expected ';' or end of line at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().col));
 }
 
 const Token& Parser::expect(TokenType t, const std::string& msg) {
 	if(check(t)) return advance();
-	throw std::runtime_error(msg + " at column " + std::to_string(peek().col));
+	throw std::runtime_error(msg + " at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().col));
 }
 
 std::vector<std::unique_ptr<Stmt>> Parser::parse() {
@@ -52,7 +61,20 @@ std::vector<std::unique_ptr<Stmt>> Parser::parse() {
 
 std::unique_ptr<Stmt> Parser::statement() {
 	if(match(TokenType::IF)) return ifStatement();
+	if(match(TokenType::WHILE)) return whileStatement();
 	if(match(TokenType::LBRACE)) return block();
+	
+	if(match(TokenType::BREAK)) {
+		if(loopDepth == 0) throw std::runtime_error("'break' outside of a loop");
+		endStatement();
+		return std::make_unique<BreakStmt>();
+	}
+	
+	if(match(TokenType::CONTINUE)) {
+		if(loopDepth == 0) throw std::runtime_error("'continue' outside of a loop");
+		endStatement();
+		return std::make_unique<ContinueStmt>();
+	}
 	
 	if(check(TokenType::ELSE)) {
 		throw std::runtime_error("'else' must be on the same line as the closing '}'");
@@ -62,15 +84,7 @@ std::unique_ptr<Stmt> Parser::statement() {
 
 std::unique_ptr<Stmt> Parser::expressionStatement() {
 	auto expr = assignment();
-	
-	bool print = true;
-	if(match(TokenType::SEMI)) {
-		print = false;
-	} else if (match(TokenType::NEWLINE)) {
-		
-	} else if (!check(TokenType::END) && !check(TokenType::RBRACE)) {
-		throw std::runtime_error("expected ';' or end of line at column " + std::to_string(peek().col));
-	}
+	bool print = endStatement();
 	return std::make_unique<ExprStmt>(std::move(expr), print);
 }
 
@@ -104,6 +118,19 @@ std::unique_ptr<Stmt> Parser::ifStatement() {
 	}
 	
 	return std::make_unique<IfStmt>(std::move(condition), std::move(thenBranch), std::move(elseBranch));
+}
+
+std::unique_ptr<Stmt> Parser::whileStatement() {
+	expect(TokenType::LPAREN, "expected '(' after 'while'");
+	auto condition = expression();
+	expect(TokenType::RPAREN, "expected ')' after condition");
+	expect(TokenType::LBRACE, "expected '{' on the same line as 'while'");
+	
+	loopDepth++;
+	auto body = block();
+	loopDepth--;
+	
+	return std::make_unique<WhileStmt>(std::move(condition), std::move(body));
 }
 
 std::unique_ptr<Expr> Parser::assignment() {
@@ -237,5 +264,5 @@ std::unique_ptr<Expr> Parser::primary() {
 		return inner;
 	}
 	
-	throw std::runtime_error("expected expression at column " + std::to_string(peek().col));
+	throw std::runtime_error("expected expression at at line " + std::to_string(peek().line) + ", column " + std::to_string(peek().col));
 }
